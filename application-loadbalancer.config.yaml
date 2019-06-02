@@ -1,0 +1,2 @@
+loadbalancer_scheme: public
+dns_format: ${EnvironmentName}.${DnsDomain}

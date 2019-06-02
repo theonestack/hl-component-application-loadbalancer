@@ -1,0 +1,6 @@
+test_metadata:
+  type: config
+  name: default
+  description: test the default configuration
+
+# Insert your tests here

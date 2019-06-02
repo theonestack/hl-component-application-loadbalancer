@@ -1,0 +1,90 @@
+test_metadata:
+  type: config
+  name: listeners
+  description: set the description for your test
+
+loadbalancer_attributes:
+  idle_timeout.timeout_seconds: 300
+
+targetgroups:
+  www:
+    protocol: http
+    port: 80
+    healthcheck:
+      port: 8080
+      protocol: http
+      interval: 30
+      timeout: 10
+      healthy_count: 2
+      unhealthy_count: 5
+      path: /healthcheck
+      code: 200
+    attributes:
+      stickiness.enabled: true
+      stickiness.type: lb_cookie
+      stickiness.lb_cookie.duration_seconds: 604800
+  api:
+    protocol: http
+    port: 80
+    healthcheck:
+      path: /ping
+      code: 200
+
+listeners:
+  http:
+    port: 80
+    protocol: http
+    default:
+      action:
+        redirect: http_to_https
+  https:
+    port: 443
+    protocol: https
+    ssl_policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+    default:
+      certificate: website
+      action:
+        targetgroup: www
+    certificates:
+      - api
+    rules:
+      -
+        priority: 100
+        actions:
+          targetgroup: api
+        conditions:
+          path: /api
+          host: "*.${DnsDomain}"
+      -
+        priority: 200
+        actions:
+          targetgroup: www
+        conditions:
+          path:
+            - /*
+          host:
+            - "*.${DnsDomain}"
+          header:
+            name: User-Agent
+            values:
+              - "*Chrome*"
+              - "*Safari*"
+          request:
+            - GET
+      -
+        priority: 999
+        conditions:
+          host: "*"
+        actions:
+          fixed:
+            type: text/html
+            code: 503
+            body: |
+              <html>
+                <head>
+                  <title>Error</title>
+                </head>
+                <body>
+                  <h1>Custom error page</h1>
+                </body>
+              </html>
