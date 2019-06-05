@@ -1,5 +1,7 @@
 # application-loadbalancer CfHighlander component
 
+[![Build Status](https://travis-ci.com/theonestack/hl-component-application-loadbalancer.svg?branch=master)](https://travis-ci.com/theonestack/hl-component-application-loadbalancer)
+
 ## Cfhighlander Setup
 
 install cfhighlander [gem](https://github.com/theonestack/cfhighlander)
