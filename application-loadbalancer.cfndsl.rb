@@ -42,7 +42,7 @@ CloudFormation do
 
     tg_tags = default_tags.clone
     tg_tags['Name'] = FnSub("${EnvironmentName}-#{tg_name}")
-    if tg.has_key?('tags') and !tags.nil?
+    if (tg.has_key?('tags')) and (!tg['tags'].nil?)
       tg['tags'].each { |key, value| tg_tags[key] = value }
     end
 
