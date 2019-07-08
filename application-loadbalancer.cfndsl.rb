@@ -83,7 +83,7 @@ CloudFormation do
 
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
-      Certificates [{ CertificateArn: FnSub(listener['default']['certificate']) }] if listener['protocol'].upcase == 'HTTPS'
+      Certificates [{ CertificateArn: Ref('SslCertId') }] if listener['protocol'].upcase == 'HTTPS'
       SslPolicy listener['ssl_policy'] if listener.has_key?('ssl_policy')
       Port listener['port']
       DefaultActions rule_actions(listener['default']['action'])
