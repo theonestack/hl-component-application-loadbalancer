@@ -64,7 +64,7 @@ CloudFormation do
       end
 
       TargetType tg['type'] if tg.has_key?('type')
-      TargetGroupAttributes tg['atributes'].map { |key, value| { Key: key, Value: value } } if tg.has_key?('atributes')
+      TargetGroupAttributes tg['attributes'].map { |key, value| { Key: key, Value: value } } if tg.has_key?('attributes')
       Tags tg_tags.map { |key,value| { Key: key, Value: value }}
 
       if tg.has_key?('type') and tg['type'] == 'ip' and tg.has_key? 'target_ips'
