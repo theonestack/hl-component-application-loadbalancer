@@ -14,6 +14,7 @@ CloudFormation do
   EC2_SecurityGroup(:SecurityGroup) do
     GroupDescription FnJoin(' ', [Ref(:EnvironmentName), component_name])
     VpcId Ref(:VPCId)
+    SecurityGroupIngress generate_security_group_rules(security_group_rules,ip_blocks) if defined? security_group_rules
     Tags sg_tags.map { |key,value| { Key: key, Value: value } }
   end
 
