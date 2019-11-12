@@ -55,7 +55,7 @@ CloudFormation do
       ## Optional
       if tg.has_key?('healthcheck')
         HealthCheckPort tg['healthcheck']['port'] if tg['healthcheck'].has_key?('port')
-        HealthCheckProtocol tg['healthcheck']['protocol'] if tg['healthcheck'].has_key?('port')
+        HealthCheckProtocol tg['healthcheck']['protocol'].upcase if tg['healthcheck'].has_key?('protocol')
         HealthCheckIntervalSeconds tg['healthcheck']['interval'] if tg['healthcheck'].has_key?('interval')
         HealthCheckTimeoutSeconds tg['healthcheck']['timeout'] if tg['healthcheck'].has_key?('timeout')
         HealthyThresholdCount tg['healthcheck']['healthy_count'] if tg['healthcheck'].has_key?('healthy_count')
@@ -91,7 +91,7 @@ CloudFormation do
       LoadBalancerArn Ref(:LoadBalancer)
     end
 
-    if (listener.has_key?('certificates')) && (listener['protocol'] == 'https')
+    if (listener.has_key?('certificates')) && (listener['protocol'].upcase == 'HTTPS')
       ElasticLoadBalancingV2_ListenerCertificate("#{listener_name}ListenerCertificate") {
         Certificates listener['certificates'].map { |certificate| { CertificateArn: FnSub(certificate) }  }
         ListenerArn Ref("#{listener_name}Listener")

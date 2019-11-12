@@ -32,5 +32,9 @@ def http_request_method(values)
 end
 
 def wrap(values)
+  if values.is_a?(Hash) && values.has_key?('Fn::Split')
+    return values
+  end
+  
   [values].flatten()
 end
