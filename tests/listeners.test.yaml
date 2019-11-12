@@ -73,15 +73,15 @@ listeners:
               - "*Safari*"
           request:
             - GET
-      # -
-      #   priority: 300
-      #   actions:
-      #     targetgroup: default
-      #   conditions:
-      #     host:
-      #       Fn::Split:
-      #         - ','
-      #         - Ref: HostHeaders
+      -
+        priority: 300
+        actions:
+          targetgroup: www
+        conditions:
+          host:
+            Fn::Split:
+              - ','
+              - api.cust.com,app.cust.com,help.cust.com
       -
         priority: 999
         conditions:
