@@ -98,13 +98,21 @@ CloudFormation do
       }
     end
 
-    listener['rules'].each do |rule|
+    listener['rules'].each_with_index do |rule, index|
 
-      ElasticLoadBalancingV2_ListenerRule("#{listener_name}Rule#{rule['priority']}") do
+      if rule.key?("name")
+        rule_name = rule['name']
+      elsif rule['priority'].is_a? Integer
+        rule_name = "#{listener_name}Rule#{rule['priority']}"
+      else
+        rule_name = "#{listener_name}Rule#{index}"
+      end
+
+      ElasticLoadBalancingV2_ListenerRule(rule_name) do
         Actions rule_actions(rule['actions'])
         Conditions rule_conditions(rule['conditions'])
         ListenerArn Ref("#{listener_name}Listener")
-        Priority rule['priority'].to_i
+        Priority rule['priority']
       end
 
     end if listener.has_key?('rules')
