@@ -1,0 +1,9 @@
+test_metadata:
+  type: config
+  name: internal
+  description: set scheme as internal
+
+loadbalancer_attributes:
+  idle_timeout.timeout_seconds: 300
+
+loadbalancer_scheme: internal
