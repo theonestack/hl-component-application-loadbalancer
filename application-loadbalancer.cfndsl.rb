@@ -83,7 +83,7 @@ CloudFormation do
   end
 
 
-  listeners = external_parameters.fetch(listeners, {})
+  listeners = external_parameters.fetch(:listeners, {})
   listeners.each do |listener_name, listener|
     next if listener.nil?
 
@@ -129,7 +129,7 @@ CloudFormation do
   end
 
 
-  records = external_parameters.fetch(records, [])
+  records = external_parameters.fetch(:records, [])
   dns_format = external_parameters[:dns_format]
   records.each do |record|
     name = (['apex',''].include? record) ? dns_format : "#{record}.#{dns_format}."
