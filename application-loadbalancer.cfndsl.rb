@@ -1,7 +1,7 @@
 CloudFormation do
 
   default_tags = {}
-  default_tags["EnvironmentName"] = Ref(:EnvironmentName)
+  default_tags["Environment"] = Ref(:EnvironmentName)
   default_tags["EnvironmentType"] = Ref(:EnvironmentType)
 
   sg_tags = default_tags.clone
