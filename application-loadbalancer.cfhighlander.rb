@@ -1,6 +1,7 @@
 CfhighlanderTemplate do
 
   # Name 'application-loadbalancer'
+  DependsOn 'lib-ec2'
 
   Parameters do
     ComponentParam 'EnvironmentName', 'dev', isGlobal: true

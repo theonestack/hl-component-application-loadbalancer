@@ -5,7 +5,8 @@ test_metadata:
 
 ip_blocks:
   local:
-    - 127.0.0.1/32
+    - ip: 127.0.0.1/32
+      desc: localhost access
     - 127.0.0.2/32
   public:
     - 0.0.0.0/0
@@ -19,6 +20,7 @@ security_group_rules:
     from: 443
     ip_blocks:
       - public
+      - local
     desc: public HTTPS access
   -
     from: 8080
