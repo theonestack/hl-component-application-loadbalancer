@@ -128,15 +128,20 @@ CloudFormation do
     }
   end
 
-  Condition(:HostedZoneIdSet, FnNot(FnEquals(Ref(:HostedZoneId), '')))
-
   records = external_parameters.fetch(:records, [])
+  use_zone_id = external_parameters[:use_zone_id]
   dns_format = external_parameters[:dns_format]
   records.each do |record|
     name = (['apex',''].include? record) ? dns_format : "#{record}.#{dns_format}."
+
     Route53_RecordSet("#{record.gsub('*','Wildcard').gsub('.','Dot').gsub('-','')}LoadBalancerRecord") do
-      HostedZoneId FnIf(:HostedZoneIdSet, Ref(:HostedZoneId), Ref('AWS::NoValue'))
-      HostedZoneName FnIf(:HostedZoneIdSet, Ref('AWS::NoValue'), FnSub("#{dns_format}."))
+
+      if use_zone_id == true
+        HostedZoneId Ref(:HostedZoneId)
+      else 
+        HostedZoneName FnSub("#{dns_format}.")
+      end
+      
       Name FnSub(name)
       Type 'A'
       AliasTarget ({
