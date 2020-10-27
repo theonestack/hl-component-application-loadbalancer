@@ -10,7 +10,8 @@ CfhighlanderTemplate do
     ComponentParam 'SubnetIds', type: 'CommaDelimitedList'
     ComponentParam 'VPCId', type: 'AWS::EC2::VPC::Id'
     ComponentParam 'SslCertId', ''
-
+    ComponentParam 'WebACLArn', ''
+    
     if use_zone_id == true
       ComponentParam 'HostedZoneId', ''
     end

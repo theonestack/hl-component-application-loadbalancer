@@ -151,6 +151,14 @@ CloudFormation do
     end
   end
 
+  Condition(:AssociateWebACL, FnNot(FnEquals(:WebACLArn, '')))
+
+  WAFv2_WebACLAssociation(:WebACLAssociation) {
+    Condition :AssociateWebACL
+    ResourceArn Ref(:LoadBalancer)
+    WebACLArn Ref(:WebACLArn)
+  }
+
   Output(:LoadBalancer) {
     Value(Ref(:LoadBalancer))
     Export FnSub("${EnvironmentName}-#{external_parameters[:component_name]}-LoadBalancer")
