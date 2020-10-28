@@ -151,7 +151,7 @@ CloudFormation do
     end
   end
 
-  Condition(:AssociateWebACL, FnNot(FnEquals(:WebACLArn, '')))
+  Condition(:AssociateWebACL, FnNot(FnEquals(Ref(:WebACLArn), '')))
 
   WAFv2_WebACLAssociation(:WebACLAssociation) {
     Condition :AssociateWebACL
