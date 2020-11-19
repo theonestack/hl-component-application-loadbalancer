@@ -1,0 +1,49 @@
+test_metadata:
+  type: config
+  name: disable_listener
+  description: disable a configured listener
+
+targetgroups:
+  www:
+    protocol: http
+    port: 80
+    healthcheck:
+      port: 8080
+      protocol: http
+      interval: 30
+      timeout: 10
+      healthy_count: 2
+      unhealthy_count: 5
+      path: /healthcheck
+      code: 200
+    attributes:
+      stickiness.enabled: true
+      stickiness.type: lb_cookie
+      stickiness.lb_cookie.duration_seconds: 604800
+    tags:
+      Name: www
+  api:
+    protocol: http
+    port: 80
+    healthcheck:
+      path: /ping
+      code: 200
+
+listeners:
+  http:
+    enabled: false
+    port: 80
+    protocol: http
+    default:
+      action:
+        redirect: http_to_https
+  https:
+    port: 443
+    protocol: https
+    ssl_policy: ELBSecurityPolicy-TLS-1-2-Ext-2018-06
+    default:
+      certificate: website
+      action:
+        targetgroup: www
+    certificates:
+      - api

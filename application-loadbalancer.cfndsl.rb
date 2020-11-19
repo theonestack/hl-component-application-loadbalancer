@@ -85,7 +85,7 @@ CloudFormation do
 
   listeners = external_parameters.fetch(:listeners, {})
   listeners.each do |listener_name, listener|
-    next if listener.nil?
+    next if listener.nil? || (listener.has_key?('enabled') && listener['enabled'] == false)
 
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
