@@ -15,7 +15,7 @@
 | WebACLArn | ACL to use on the load balancer | None | false | string
 | HostedZoneId | Route53 Zone ID | None | false | string (arn)
 
-HostedZoneId is ONLY used if use_zone_id is True.
+`HostedZoneId` is ONLY used if `use_zone_id` is True.
 
 
 
@@ -33,9 +33,6 @@ HostedZoneId is ONLY used if use_zone_id is True.
 ## Included Components
 
 [lib-ec2](https://github.com/theonestack/hl-component-lib-ec2)
-
-[lib-iam](https://github.com/theonestack/hl-component-lib-iam)
-
 
 ## Example Configuration
 ### Highlander
