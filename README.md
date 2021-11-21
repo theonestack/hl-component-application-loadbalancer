@@ -40,6 +40,7 @@
         parameter name: 'DnsDomain', value: root_domain
         parameter name: 'SubnetIds', value: cfout('vpcv2', 'PublicSubnets')
         parameter name: 'VPCId', value: cfout('vpcv2', 'VPCId')
+        parameter name: 'SslCertId', value: cfout('acmv2', 'CertificateArn')
     end
 
 ### Load Balancer Configuration
