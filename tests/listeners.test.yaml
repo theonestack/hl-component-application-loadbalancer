@@ -3,6 +3,9 @@ test_metadata:
   name: listeners
   description: set the description for your test
 
+test_parameters:
+  webSSLCert: ''
+
 loadbalancer_attributes:
   idle_timeout.timeout_seconds: 300
 
@@ -49,6 +52,7 @@ listeners:
         targetgroup: www
     certificates:
       - api
+      - ${webSSLCert}
     rules:
       -
         priority: 100

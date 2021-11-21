@@ -97,10 +97,26 @@ CloudFormation do
     end
 
     if (listener.has_key?('certificates')) && (listener['protocol'].upcase == 'HTTPS')
-      ElasticLoadBalancingV2_ListenerCertificate("#{listener_name}ListenerCertificate") {
-        Certificates listener['certificates'].map { |certificate| { CertificateArn: FnSub(certificate) }  }
-        ListenerArn Ref("#{listener_name}Listener")
-      }
+      listener['certificates'].each_with_index do |cert, index|
+        #is the cert is a ref to a stack param add a condtion to allow an empty ref
+        #assumes when you want to pass the ref to the cert arn you'll only have FnSub ref
+        is_cert_a_param = false
+        if /\${.*}/.match?(cert)
+          is_cert_a_param = true
+          Condition("EnableCert#{index}", FnNot(FnEquals(FnSub(cert), "")))
+        end
+
+        listener_cert_name = "#{listener_name}ListenerCertificate"
+        if index > 0
+          listener_cert_name = "#{listener_name}ListenerCertificate#{index}"
+        end
+
+        ElasticLoadBalancingV2_ListenerCertificate(listener_cert_name) do
+          Condition "EnableCert#{index}" if is_cert_a_param
+          Certificates [{ CertificateArn: FnSub(cert) }]
+          ListenerArn Ref("#{listener_name}Listener")
+        end
+      end
     end
 
     listener['rules'].each_with_index do |rule, index|
