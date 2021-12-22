@@ -49,44 +49,44 @@ dns_format: ${EnvironmentName}.${DnsDomain}
 use_zone_id: false
 records:
   - lb
-  listeners:
+listeners:
   http:
     port: 80
     protocol: http
     default:
       action:
         targetgroup: web
-        targetgroups:
-        publicDefault:
-        protocol: http
-        port: 80
-        tags:
-        Name: Default-HTTP
-        web:
-        protocol: http
-        type: ip
-        port: 80
-        healthcheck:
-        path: "/"
-        interval: 15
-        timeout: 5
-        healthy_count: 5
-        unhealthy_count: 4
-        code: '200'
-        tags:
-        Name:
+targetgroups:
+  publicDefault:
+    protocol: http
+    port: 80
+    tags:
+      Name: Default-HTTP
+  web:
+    protocol: http
+    type: ip
+    port: 80
+    healthcheck:
+      path: "/"
+      interval: 15
+      timeout: 5
+      healthy_count: 5
+      unhealthy_count: 4
+      code: '200'
+    tags:
+      Name:
         Fn::Sub: ${EnvironmentName}-app
-        attributes:
-        deregistration_delay.timeout_seconds: 30
-        security_group_rules:
-        -
-        protocol: tcp
-        from: 80
-        to: 80
-        ip_blocks:
-        - ops
-        - dev
-        - public
+    attributes:
+      deregistration_delay.timeout_seconds: 30
+security_group_rules:
+  -
+    protocol: tcp
+    from: 80
+    to: 80
+    ip_blocks:
+      - ops
+      - dev
+      - public
 ```
 ## Cfhighlander Setup
 
