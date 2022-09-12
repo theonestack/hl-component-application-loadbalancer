@@ -1,0 +1,7 @@
+test_metadata:
+  type: config
+  name: export_name
+  description: test the default configuration
+
+
+export_name: my-export
