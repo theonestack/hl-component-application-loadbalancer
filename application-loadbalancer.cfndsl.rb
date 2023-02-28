@@ -89,12 +89,20 @@ CloudFormation do
   listeners.each do |listener_name, listener|
     next if listener.nil? || (listener.has_key?('enabled') && listener['enabled'] == false)
 
+    default_actions = rule_actions(listener['default']['action'])
+
+    if listener.has_key?('cognito')
+      if listener['cognito'] == true
+        default_actions << cognito(self)
+      end
+    end
+
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
       Certificates [{ CertificateArn: Ref('SslCertId') }] if listener['protocol'].upcase == 'HTTPS'
       SslPolicy listener['ssl_policy'] if listener.has_key?('ssl_policy')
       Port listener['port']
-      DefaultActions rule_actions(listener['default']['action'])
+      DefaultActions default_actions
       LoadBalancerArn Ref(:LoadBalancer)
     end
 
@@ -131,8 +139,15 @@ CloudFormation do
         rule_name = "#{listener_name}Rule#{index}"
       end
 
+      actions = rule_actions(rule['actions'])
+      if listener.has_key?('cognito')
+        if listener['cognito'] == true
+          actions << cognito(self)
+        end
+      end
+
       ElasticLoadBalancingV2_ListenerRule(rule_name) do
-        Actions rule_actions(rule['actions'])
+        Actions actions
         Conditions rule_conditions(rule['conditions'])
         ListenerArn Ref("#{listener_name}Listener")
         Priority rule['priority']

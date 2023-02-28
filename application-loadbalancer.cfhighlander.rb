@@ -2,6 +2,7 @@ CfhighlanderTemplate do
 
   # Name 'application-loadbalancer'
   DependsOn 'lib-ec2'
+  DependsOn 'lib-alb'
 
   Parameters do
     ComponentParam 'EnvironmentName', 'dev', isGlobal: true
@@ -11,6 +12,9 @@ CfhighlanderTemplate do
     ComponentParam 'VPCId', type: 'AWS::EC2::VPC::Id'
     ComponentParam 'SslCertId', ''
     ComponentParam 'WebACLArn', ''
+    ComponentParam 'UserPoolId', ''
+    ComponentParam 'UserPoolClientId', ''
+    ComponentParam 'UserPoolDomainName', ''
     
     if use_zone_id == true
       ComponentParam 'HostedZoneId', ''
