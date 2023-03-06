@@ -42,7 +42,6 @@ CloudFormation do
     LoadBalancerAttributes attributes if attributes.any?
   end
 
-
   targetgroups = external_parameters.fetch(:targetgroups, {})
   targetgroups.each do |tg_name, tg|
 
@@ -84,25 +83,23 @@ CloudFormation do
     }
   end
 
+  Condition(:EnableCognito, FnNot(FnEquals(Ref(:UserPoolClientId), '')))
 
   listeners = external_parameters.fetch(:listeners, {})
   listeners.each do |listener_name, listener|
     next if listener.nil? || (listener.has_key?('enabled') && listener['enabled'] == false)
 
     default_actions = rule_actions(listener['default']['action'])
-
-    if listener.has_key?('cognito')
-      if listener['cognito'] == true
-        default_actions << cognito(self)
-      end
-    end
+    
+    default_actions_with_cognito = rule_actions(listener['default']['action'])
+    default_actions_with_cognito << cognito(self)
 
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
       Certificates [{ CertificateArn: Ref('SslCertId') }] if listener['protocol'].upcase == 'HTTPS'
       SslPolicy listener['ssl_policy'] if listener.has_key?('ssl_policy')
       Port listener['port']
-      DefaultActions default_actions
+      DefaultActions FnIf(:EnableCognito, default_actions_with_cognito, default_actions)
       LoadBalancerArn Ref(:LoadBalancer)
     end
 
@@ -140,14 +137,12 @@ CloudFormation do
       end
 
       actions = rule_actions(rule['actions'])
-      if listener.has_key?('cognito')
-        if listener['cognito'] == true
-          actions << cognito(self)
-        end
-      end
+
+      actions_with_cognito = rule_actions(rule['actions'])
+      actions_with_cognito << cognito(self)
 
       ElasticLoadBalancingV2_ListenerRule(rule_name) do
-        Actions actions
+        Actions FnIf(:EnableCognito, actions_with_cognito, actions)
         Conditions rule_conditions(rule['conditions'])
         ListenerArn Ref("#{listener_name}Listener")
         Priority rule['priority']
