@@ -94,12 +94,14 @@ CloudFormation do
     default_actions_with_cognito = rule_actions(listener['default']['action'])
     default_actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
 
+    Condition(:ListenerIsHTTPS, FnEquals(listener['protocol'].upcase, 'HTTPS'))
+
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
       Certificates [{ CertificateArn: Ref('SslCertId') }] if listener['protocol'].upcase == 'HTTPS'
       SslPolicy listener['ssl_policy'] if listener.has_key?('ssl_policy')
       Port listener['port']
-      DefaultActions FnIf(:EnableCognito, default_actions_with_cognito, default_actions)
+      DefaultActions FnIf(:EnableCognito, FnIf(:ListenerIsHTTPS, default_actions_with_cognito, default_actions), default_actions)
       LoadBalancerArn Ref(:LoadBalancer)
     end
 
@@ -142,7 +144,7 @@ CloudFormation do
       actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
 
       ElasticLoadBalancingV2_ListenerRule(rule_name) do
-        Actions FnIf(:EnableCognito, actions_with_cognito, actions)
+        Actions FnIf(:EnableCognito, FnIf(:ListenerIsHTTPS, actions_with_cognito, actions), actions)
         Conditions rule_conditions(rule['conditions'])
         ListenerArn Ref("#{listener_name}Listener")
         Priority rule['priority']
