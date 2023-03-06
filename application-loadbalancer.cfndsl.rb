@@ -92,7 +92,7 @@ CloudFormation do
     default_actions = rule_actions(listener['default']['action'])
     
     default_actions_with_cognito = rule_actions(listener['default']['action'])
-    default_actions_with_cognito << cognito(self)
+    default_actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
 
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
@@ -139,7 +139,7 @@ CloudFormation do
       actions = rule_actions(rule['actions'])
 
       actions_with_cognito = rule_actions(rule['actions'])
-      actions_with_cognito << cognito(self)
+      actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
 
       ElasticLoadBalancingV2_ListenerRule(rule_name) do
         Actions FnIf(:EnableCognito, actions_with_cognito, actions)
