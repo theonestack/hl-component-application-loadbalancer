@@ -42,7 +42,6 @@ CloudFormation do
     LoadBalancerAttributes attributes if attributes.any?
   end
 
-
   targetgroups = external_parameters.fetch(:targetgroups, {})
   targetgroups.each do |tg_name, tg|
 
@@ -84,17 +83,25 @@ CloudFormation do
     }
   end
 
+  Condition(:EnableCognito, FnNot(FnEquals(Ref(:UserPoolClientId), '')))
 
   listeners = external_parameters.fetch(:listeners, {})
   listeners.each do |listener_name, listener|
     next if listener.nil? || (listener.has_key?('enabled') && listener['enabled'] == false)
+
+    default_actions = rule_actions(listener['default']['action'])
+    
+    default_actions_with_cognito = rule_actions(listener['default']['action'])
+    default_actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
+
+    Condition("#{listener_name}isHTTPS", FnEquals(listener['protocol'].upcase, 'HTTPS'))
 
     ElasticLoadBalancingV2_Listener("#{listener_name}Listener") do
       Protocol listener['protocol'].upcase
       Certificates [{ CertificateArn: Ref('SslCertId') }] if listener['protocol'].upcase == 'HTTPS'
       SslPolicy listener['ssl_policy'] if listener.has_key?('ssl_policy')
       Port listener['port']
-      DefaultActions rule_actions(listener['default']['action'])
+      DefaultActions FnIf(:EnableCognito, FnIf("#{listener_name}isHTTPS", default_actions_with_cognito, default_actions), default_actions)
       LoadBalancerArn Ref(:LoadBalancer)
     end
 
@@ -131,8 +138,13 @@ CloudFormation do
         rule_name = "#{listener_name}Rule#{index}"
       end
 
+      actions = rule_actions(rule['actions'])
+
+      actions_with_cognito = rule_actions(rule['actions'])
+      actions_with_cognito << cognito(Ref(:UserPoolId),Ref(:UserPoolClientId),Ref(:UserPoolDomainName))
+
       ElasticLoadBalancingV2_ListenerRule(rule_name) do
-        Actions rule_actions(rule['actions'])
+        Actions FnIf(:EnableCognito, FnIf("#{listener_name}isHTTPS", actions_with_cognito, actions), actions)
         Conditions rule_conditions(rule['conditions'])
         ListenerArn Ref("#{listener_name}Listener")
         Priority rule['priority']
