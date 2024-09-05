@@ -1,11 +1,20 @@
 CloudFormation do
 
-  default_tags = {}
-  default_tags["Environment"] = Ref(:EnvironmentName)
-  default_tags["EnvironmentType"] = Ref(:EnvironmentType)
+  # default_tags = {}
+  # default_tags["Environment"] = Ref(:EnvironmentName)
+  # default_tags["EnvironmentType"] = Ref(:EnvironmentType)
+
+  default_tags = []
+  default_tags << { Key: 'Environment', Value: Ref(:EnvironmentName) }
+  default_tags << { Key: 'EnvironmentType', Value: Ref(:EnvironmentType) }
+
+  tags = external_parameters.fetch(:tags, {})
+  tags.each do |key, value|
+    default_tags << { Key: FnSub(key), Value: FnSub(value)}
+  end
 
   sg_tags = default_tags.clone
-  sg_tags['Name'] = FnSub("${EnvironmentName}-#{external_parameters[:loadbalancer_scheme]}-loadbalancer")
+  sg_tags << { Key: 'Name', Value: FnSub("${EnvironmentName}-#{external_parameters[:loadbalancer_scheme]}-loadbalancer")}
 
   loadbalancer_name = external_parameters.fetch(:loadbalancer_name, '')
   security_group_rules = external_parameters.fetch(:security_group_rules, [])
@@ -17,7 +26,7 @@ CloudFormation do
     GroupDescription FnJoin(' ', [Ref(:EnvironmentName), "#{export_name}"])
     VpcId Ref(:VPCId)
     SecurityGroupIngress generate_security_group_rules(security_group_rules,ip_blocks) if (!security_group_rules.empty? && !ip_blocks.empty?)
-    Tags sg_tags.map { |key,value| { Key: key, Value: value } }
+    Tags sg_tags
   end
 
   attributes = []
@@ -27,10 +36,7 @@ CloudFormation do
   end
 
   loadbalancer_tags = default_tags.clone
-  loadbalancer_tags['Name'] = (!loadbalancer_name.empty?) ? FnSub(loadbalancer_name) : FnSub("${EnvironmentName}-#{external_parameters[:loadbalancer_scheme]}")
-  tags = external_parameters.fetch(:tags, {})
-  tags.each { |key, value| loadbalancer_tags[key] = value }
-
+  loadbalancer_tags << {Key: 'Name', Value: (!loadbalancer_name.empty?) ? FnSub(loadbalancer_name) : FnSub("${EnvironmentName}-#{external_parameters[:loadbalancer_scheme]}")}
 
   ElasticLoadBalancingV2_LoadBalancer(:LoadBalancer) do
     Name FnSub(loadbalancer_name) if !loadbalancer_name.empty?
@@ -38,7 +44,7 @@ CloudFormation do
     Scheme 'internal' if external_parameters[:loadbalancer_scheme] == 'internal'
     Subnets Ref(:SubnetIds)
     SecurityGroups [Ref(:SecurityGroup)]
-    Tags loadbalancer_tags.map { |key,value| { Key: key, Value: value }}
+    Tags loadbalancer_tags
     LoadBalancerAttributes attributes if attributes.any?
   end
 
@@ -46,9 +52,12 @@ CloudFormation do
   targetgroups.each do |tg_name, tg|
 
     tg_tags = default_tags.clone
-    tg_tags['Name'] = FnSub("${EnvironmentName}-#{tg_name}")
-    if (tg.has_key?('tags')) and (!tg['tags'].nil?)
-      tg['tags'].each { |key, value| tg_tags[key] = value }
+    tg_tags << {Key: 'Name', Value: FnSub("${EnvironmentName}-#{tg_name}")}
+    
+    if tg.has_key?('tags') && !tg['tags'].nil?
+      tg['tags'].each do |key, value|
+        tg_tags << { Key: key, Value: value }
+      end
     end
 
     ElasticLoadBalancingV2_TargetGroup("#{tg_name}TargetGroup") do
@@ -70,7 +79,7 @@ CloudFormation do
 
       TargetType tg['type'] if tg.has_key?('type')
       TargetGroupAttributes tg['attributes'].map { |key, value| { Key: key, Value: value } } if tg.has_key?('attributes')
-      Tags tg_tags.map { |key,value| { Key: key, Value: value }}
+      Tags tg_tags
 
       if tg.has_key?('type') and tg['type'] == 'ip' and tg.has_key? 'target_ips'
         Targets (tg['target_ips'].map {|ip|  { 'Id' => ip['ip'], 'Port' => ip['port'] }})
