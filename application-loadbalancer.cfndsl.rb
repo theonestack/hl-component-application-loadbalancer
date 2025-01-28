@@ -167,9 +167,16 @@ CloudFormation do
   use_zone_id = external_parameters[:use_zone_id]
   dns_format = external_parameters[:dns_format]
   records.each do |record|
+
+    if record.include?('${')
+      resource_name = "#{record.hash.abs}LoadBalancerRecord"
+    else
+      resource_name = "#{record.gsub('*','Wildcard').gsub('.','Dot').gsub('-','')}LoadBalancerRecord"
+    end
     name = (['apex',''].include? record) ? dns_format : "#{record}.#{dns_format}."
 
-    Route53_RecordSet("#{record.gsub('*','Wildcard').gsub('.','Dot').gsub('-','')}LoadBalancerRecord") do
+
+    Route53_RecordSet(resource_name) do
 
       if use_zone_id == true
         HostedZoneId Ref(:HostedZoneId)
