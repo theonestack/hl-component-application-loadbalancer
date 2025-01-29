@@ -1,3 +1,5 @@
+require 'digest/sha1'
+
 CloudFormation do
 
   default_tags = []
@@ -169,7 +171,7 @@ CloudFormation do
   records.each do |record|
 
     if record.include?('${')
-      resource_name = "#{record.hash.abs}LoadBalancerRecord"
+      resource_name = "#{(Digest::SHA1.hexdigest record.to_s)[0..20]}LoadBalancerRecord"
     else
       resource_name = "#{record.gsub('*','Wildcard').gsub('.','Dot').gsub('-','')}LoadBalancerRecord"
     end
