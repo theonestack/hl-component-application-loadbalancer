@@ -1,0 +1,9 @@
+test_metadata:
+  type: config
+  name: dns_records
+  description: test setting DNS records for the alb
+
+
+records:
+  - test
+  - test-${AWS::Region}
